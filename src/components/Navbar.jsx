@@ -1,6 +1,9 @@
+
+
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaUser, FaPalette, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaPalette, FaSignOutAlt, FaPlus } from 'react-icons/fa';
 
 const Navbar = ({ user, setUser }) => {
   const navigate = useNavigate();
@@ -28,6 +31,15 @@ const Navbar = ({ user, setUser }) => {
             <Link to="/" className="text-gray-600 hover:text-purple-600">Home</Link>
             <Link to="/about" className="text-gray-600 hover:text-purple-600">About</Link>
             <Link to="/explore" className="text-gray-600 hover:text-purple-600">Explore Paintings</Link>
+            {user && user.role === 'artist' && (
+              <Link 
+                to="/showcase-artwork" 
+                className="flex items-center space-x-1 text-purple-600 hover:text-purple-700"
+              >
+                <FaPlus className="h-4 w-4" />
+                <span>Showcase Artwork</span>
+              </Link>
+            )}
             
             {user ? (
               <div className="relative">

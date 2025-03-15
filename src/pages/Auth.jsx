@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-
+const API_URL=import.meta.env.VITE_API_URL;
 const Auth = ({ setUser }) => {
   const navigate = useNavigate();
   const [isSignIn, setIsSignIn] = useState(true);
