@@ -1,15 +1,19 @@
+
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaSearch, FaExclamationCircle, FaPalette, FaShoppingCart, FaCheckCircle } from 'react-icons/fa';
 
 const Explore = () => {
+  const navigate = useNavigate();
   const [paintings, setPaintings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [priceFilter, setPriceFilter] = useState('all');
-  const [purchaseStatus, setPurchaseStatus] = useState({ id: null, loading: false, success: false });
+  const [cartStatus, setCartStatus] = useState({ id: null, loading: false, success: false });
 
   useEffect(() => {
     const fetchPaintings = async () => {
@@ -28,22 +32,23 @@ const Explore = () => {
     fetchPaintings();
   }, []);
 
-  const handlePurchase = async (paintingId) => {
-    setPurchaseStatus({ id: paintingId, loading: true, success: false });
+  const handleAddToCart = async (paintingId) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    setCartStatus({ id: paintingId, loading: true, success: false });
     try {
-      const user = JSON.parse(localStorage.getItem('user'));
-      await axios.post(`/api/v1/painting/${paintingId}/buy`, {
-        buyerId: user.id
-      });
-      setPurchaseStatus({ id: paintingId, loading: false, success: true });
-      // Remove the purchased painting from the list after a short delay
+      await axios.post(`http://localhost:8090/api/v1/users/${user.id}/cart/${paintingId}`);
+      setCartStatus({ id: paintingId, loading: false, success: true });
       setTimeout(() => {
-        setPaintings(paintings.filter(p => p.id !== paintingId));
-        setPurchaseStatus({ id: null, loading: false, success: false });
+        setCartStatus({ id: null, loading: false, success: false });
       }, 2000);
     } catch (error) {
-      setError('Failed to purchase the painting. Please try again.');
-      setPurchaseStatus({ id: null, loading: false, success: false });
+      setError('Failed to add item to cart. Please try again.');
+      setCartStatus({ id: null, loading: false, success: false });
     }
   };
 
@@ -80,9 +85,9 @@ const Explore = () => {
               onChange={(e) => setPriceFilter(e.target.value)}
             >
               <option value="all">All Prices</option>
-              <option value="under1000">Under 1,000</option>
-              <option value="under5000">Under 5,000</option>
-              <option value="over5000">5,000 & Above</option>
+              <option value="under1000">Under $1,000</option>
+              <option value="under5000">Under $5,000</option>
+              <option value="over5000">$5,000 & Above</option>
             </select>
           </div>
         </div>
@@ -137,16 +142,14 @@ const Explore = () => {
                       {painting.description}
                     </p>
                     <div className="flex justify-between items-center">
-                    <span className="text-purple-600 font-semibold text-lg flex items-center">
-  <img width="20" height="20" src="https://img.icons8.com/ios/50/rupee.png" alt="rupee" className="inline-block mr-1" />
-  {parseFloat(painting.prices).toLocaleString()}
-</span>
-
-                      {purchaseStatus.id === painting.id ? (
-                        purchaseStatus.success ? (
+                      <span className="text-purple-600 font-semibold text-lg">
+                        ${parseFloat(painting.prices).toLocaleString()}
+                      </span>
+                      {cartStatus.id === painting.id ? (
+                        cartStatus.success ? (
                           <div className="flex items-center text-green-600">
                             <FaCheckCircle className="mr-2" />
-                            <span>Purchased!</span>
+                            <span>Added to Cart!</span>
                           </div>
                         ) : (
                           <button
@@ -154,16 +157,16 @@ const Explore = () => {
                             className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg opacity-75"
                           >
                             <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                            <span>Processing...</span>
+                            <span>Adding...</span>
                           </button>
                         )
                       ) : (
                         <button
-                          onClick={() => handlePurchase(painting.id)}
+                          onClick={() => handleAddToCart(painting.id)}
                           className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
                         >
                           <FaShoppingCart />
-                          <span>Buy Now</span>
+                          <span>Add to Cart</span>
                         </button>
                       )}
                     </div>
