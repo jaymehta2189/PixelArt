@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +13,7 @@ const Explore = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [priceFilter, setPriceFilter] = useState('all');
   const [cartStatus, setCartStatus] = useState({ id: null, loading: false, success: false });
+  const [purchaseStatus, setPurchaseStatus] = useState({ id: null, loading: false });
 
   useEffect(() => {
     const fetchPaintings = async () => {
@@ -49,6 +49,32 @@ const Explore = () => {
     } catch (error) {
       setError('Failed to add item to cart. Please try again.');
       setCartStatus({ id: null, loading: false, success: false });
+    }
+  };
+
+  const handleBuyNow = async (paintingId) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    if (window.confirm('Are you sure you want to purchase this painting?')) {
+      setPurchaseStatus({ id: paintingId, loading: true });
+      try {
+        await axios.post(`http://localhost:8090/api/v1/painting/${user.id}/buyitem/${paintingId}`);
+        setPurchaseStatus({ id: null, loading: false });
+        setPaintings(paintings.filter(p => p.id !== paintingId));
+        navigate('/', { 
+          state: { 
+            message: 'Purchase successful! Thank you for your order.',
+            type: 'success'
+          }
+        });
+      } catch (error) {
+        setError('Failed to complete purchase. Please try again.');
+        setPurchaseStatus({ id: null, loading: false });
+      }
     }
   };
 
@@ -145,30 +171,50 @@ const Explore = () => {
                       <span className="text-purple-600 font-semibold text-lg">
                         ${parseFloat(painting.prices).toLocaleString()}
                       </span>
-                      {cartStatus.id === painting.id ? (
-                        cartStatus.success ? (
-                          <div className="flex items-center text-green-600">
-                            <FaCheckCircle className="mr-2" />
-                            <span>Added to Cart!</span>
-                          </div>
+                      <div className="flex space-x-2">
+                        {cartStatus.id === painting.id ? (
+                          cartStatus.success ? (
+                            <div className="flex items-center text-green-600">
+                              <FaCheckCircle className="mr-2" />
+                              <span>Added!</span>
+                            </div>
+                          ) : (
+                            <button
+                              disabled
+                              className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg opacity-75"
+                            >
+                              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                              <span>Adding...</span>
+                            </button>
+                          )
                         ) : (
-                          <button
-                            disabled
-                            className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg opacity-75"
-                          >
-                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                            <span>Adding...</span>
-                          </button>
-                        )
-                      ) : (
-                        <button
-                          onClick={() => handleAddToCart(painting.id)}
-                          className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-                        >
-                          <FaShoppingCart />
-                          <span>Add to Cart</span>
-                        </button>
-                      )}
+                          <>
+                            <button
+                              onClick={() => handleAddToCart(painting.id)}
+                              className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                            >
+                              <FaShoppingCart />
+                              <span>Add to Cart</span>
+                            </button>
+                            <button
+                              onClick={() => handleBuyNow(painting.id)}
+                              disabled={purchaseStatus.id === painting.id}
+                              className={`flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors ${
+                                purchaseStatus.id === painting.id ? 'opacity-75 cursor-not-allowed' : ''
+                              }`}
+                            >
+                              {purchaseStatus.id === painting.id ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                                  <span>Processing...</span>
+                                </>
+                              ) : (
+                                <span>Buy Now</span>
+                              )}
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </motion.div>
