@@ -8,11 +8,11 @@ const About = () => {
       title: "Curated Artworks",
       description: "Discover unique pieces from talented artists worldwide, carefully selected for authenticity and quality."
     },
-    {
-      icon: <FaHandshake className="h-8 w-8 text-purple-600" />,
-      title: "Secure Transactions",
-      description: "Every purchase is protected with state-of-the-art security measures and buyer protection policies."
-    },
+    // {
+    //   icon: <FaHandshake className="h-8 w-8 text-purple-600" />,
+    //   title: "Secure Transactions",
+    //   description: "Every purchase is protected with state-of-the-art security measures and buyer protection policies."
+    // },
     {
       icon: <FaLock className="h-8 w-8 text-purple-600" />,
       title: "Artist Verification",

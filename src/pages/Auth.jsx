@@ -71,6 +71,7 @@ const Auth = ({ setUser }) => {
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
               />
+              {!isSignIn && (
               <div className="flex items-center space-x-4">
                 <button
                   type="button"
@@ -91,6 +92,7 @@ const Auth = ({ setUser }) => {
                   Artist
                 </button>
               </div>
+            )}
               <button
                 type="submit"
                 className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors"
