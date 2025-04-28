@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: art
+  datasource:
+    url: jdbc:postgresql://localhost:5555/jay
+    username: jay
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+server:
+  port: 8090
+
+cloudinary:
+  name: dlswoqzhe
+  api:
+    key: 254596571714732
+    secret-key: z7RtQ4Rnzo5Qtd_T5OhbozrlrWo
